@@ -1,3 +1,5 @@
+import * as d3 from 'd3'
+
 Array.prototype.shuffle = function () {
   var currentIndex = this.length,
     temporaryValue,
@@ -18,42 +20,33 @@ Array.prototype.shuffle = function () {
   return this
 }
 
-const POSTS_LENGTH = 10
-const DEPTH = 0.1
-const SCALING_FACTOR = 0.5
+const treemap = (data, width, height) =>
+  d3
+    .treemap()
+    .tile(d3.treemapSliceDice)
+    .size([width, height])
+    .padding(5)
+    .round(true)(
+    d3
+      .hierarchy({ name: 'posts', children: data })
+      .sum((d) => d.value)
+      .sort((a, b) => b.value - a.value)
+  )
 
 export default (data, width, height) => {
-  const horizontalScreenOffset = width / (POSTS_LENGTH * 2)
-  const verticalScreenOffset = height * 0.05
-  const tileSize = (width - horizontalScreenOffset * 2) / POSTS_LENGTH
-  const horizontalCentralOffset = tileSize / 2
-  const transformedData = data.map((item, index) => {
-    const cardWidth = tileSize + tileSize * 0.25 - tileSize * index * DEPTH
-    const verticalOffset = height * index * DEPTH
-    const tileHeight = height - verticalOffset
-    return {
-      width: cardWidth,
-      scalingValue: cardWidth * SCALING_FACTOR,
-      fontSize: 1 - index * DEPTH,
-      zIndex: Math.round((1 - index * DEPTH) * POSTS_LENGTH),
-      y:
-        verticalScreenOffset +
-        Math.floor(
-          (Math.random() * tileHeight) / (index * SCALING_FACTOR + 3)
-        ) +
-        verticalOffset / 2,
-      content: item,
+  const lowerValues = data.filter((item) => item.value <= 1)
+  const highervalues = data.filter((item) => item.value > 1)
+  const groupedData = [
+    ...highervalues,
+    { name: 'group1', children: lowerValues.slice(0, 2) },
+    { name: 'group1', children: lowerValues.slice(2, 4) },
+  ]
+  const root = treemap(groupedData.shuffle(), width, height)
+  const x = root.children.reduce((acc, val) => {
+    if (val.children) {
+      return [...acc, ...val.children]
     }
-  })
-
-  const processedData = transformedData.shuffle().map((card, index) => {
-    const { scalingValue, ...item } = card
-    const cardWidth = item.width
-    return {
-      ...item,
-      x: tileSize * index + horizontalScreenOffset - scalingValue / 2,
-      width: cardWidth + scalingValue,
-    }
-  })
-  return processedData
+    return [...acc, val]
+  }, [])
+  return { ...root, children: x }
 }

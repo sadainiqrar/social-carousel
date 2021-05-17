@@ -8,7 +8,21 @@ function App() {
   console.log(tData)
   return (
     <div className="container" style={{ width: 800, height: 400 }}>
-      {tData.map((item) => {
+      {tData.children.map((item) => {
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              top: item.y0,
+              left: item.x0,
+              width: item.x1 - item.x0,
+              height: item.y1 - item.y0,
+              background: 'red',
+            }}
+          ></div>
+        )
+      })}
+      {/* {tData.map((item) => {
         return (
           <div
             className="card"
@@ -27,7 +41,7 @@ function App() {
             </div>
           </div>
         )
-      })}
+      })} */}
     </div>
   )
 }
