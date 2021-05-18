@@ -6,9 +6,8 @@
   font-size: 12px;
   display: flex;
   justify-content: center;
-  border: 5px dashed white;
+  border: 5px dashed black;
   contain: content;
-  background-image: url('https://ak.picdn.net/shutterstock/videos/1026570365/thumb/1.jpg');
 }
 .card {
   display: flex;
