@@ -14,15 +14,25 @@ export default class Item extends THREE.Group {
   create() {
     this.uniforms = {
       time: { type: 'f', value: 1.0 },
-      fogColor: { type: 'c', value: this.scene.fog.color },
-      fogNear: { type: 'f', value: this.scene.fog.near },
-      fogFar: { type: 'f', value: this.scene.fog.far },
+      fogColor: { type: 'c', value: new THREE.Color(this.config.fog.color) },
+      fogNear: { type: 'f', value: new THREE.Color(this.config.fog.fogNear) },
+      fogFar: { type: 'f', value: new THREE.Color(this.config.fog.fogFar) },
       texture: { type: 't', value: this.texture },
       opacity: { type: 'f', value: 1.0 },
       progress: { type: 'f', value: 0.0 },
       gradientColor: { type: 'vec3', value: new THREE.Color(0x1b42d8) },
+      resolution: {
+        type: 'v2',
+        value: new THREE.Vector2(200, 300),
+      },
+      imageResolution: {
+        type: 'v2',
+        value: new THREE.Vector2(
+          this.texture.image.width,
+          this.texture.image.height
+        ),
+      },
     }
-
     this.geometry = new THREE.PlaneGeometry(1, 1)
     this.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
@@ -31,20 +41,28 @@ export default class Item extends THREE.Group {
       fog: true,
       transparent: true,
     })
+    this.material.morphTargets = true
     // this.mesh = new THREE.Mesh(
     //   this.geometry,
     //   new THREE.MeshLambertMaterial({ color: 'white' })y
     // )
 
-    this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.scale.set(this.texture.size.x, this.texture.size.y, 1)
+    this.mesh = new THREE.Mesh(this.geometry, [
+      this.material,
+      new THREE.MeshPhongMaterial({ color: 0x0000ff }),
+    ])
+    this.mesh.scale.set(this.texture.size.width, this.texture.size.height, 1)
     // updates size of meshes after texture has been loaded
     this.texture.onUpdate = () => {
       if (
-        this.mesh.scale.x !== this.texture.size.x &&
-        this.mesh.scale.y !== this.texture.size.y
+        this.mesh.scale.x !== this.texture.size.width &&
+        this.mesh.scale.y !== this.texture.size.height
       ) {
-        this.mesh.scale.set(this.texture.size.x, this.texture.size.y, 1)
+        this.mesh.scale.set(
+          this.texture.size.width,
+          this.texture.size.height,
+          1
+        )
         this.texture.onUpdate = null
       }
     }

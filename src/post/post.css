@@ -1,0 +1,18 @@
+svg {
+  border: 1px solid red;
+}
+
+svg .image image {
+  filter: url(#dropshadow);
+}
+
+svg .content image {
+  filter: url(#dropshadow);
+  fill: red;
+}
+.tags,
+.username {
+  fill: #0d274d;
+  font-weight: 500;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}

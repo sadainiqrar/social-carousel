@@ -2,13 +2,6 @@
   text-align: center;
 }
 
-.container {
-  font-size: 12px;
-  display: flex;
-  justify-content: center;
-  border: 5px dashed black;
-  contain: content;
-}
 .card {
   display: flex;
   justify-content: space-between;
