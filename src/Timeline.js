@@ -56,7 +56,7 @@ function createVideoTexture(filename, renderer, config) {
     const video = document.createElement('video')
     video.style = 'position:absolute;height:0'
     video.muted = true
-    video.autoplay = true
+    video.autoplay = false
     video.loop = true
     video.crossOrigin = 'anonymous'
     video.setAttribute('muted', true)

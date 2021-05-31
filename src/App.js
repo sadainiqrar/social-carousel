@@ -54,7 +54,7 @@ function App() {
       'https://api.fankave.com/v1.0/cms/content/social?topic=ciscolive2021&contentType=video'
     ).then((response) => response.json())
     Promise.all([imagePosts, videoPosts]).then(([images, videos]) =>
-      setPosts(transformData([...images, ...videos]))
+      setPosts(transformData([...images, ...images]))
     )
   }, [])
   return (
