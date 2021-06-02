@@ -28,8 +28,39 @@ const getSize = (imageSize, width) => {
 }
 function createImageTexture(filename, renderer, config) {
   return new Promise((resolve) => {
-    new THREE.TextureLoader().load(
-      filename,
+    // const img = new Image()
+    // img.onload = function () {
+    //   try {
+    //     const canvas = document.createElement('canvas')
+    //     const ctx = canvas.getContext('2d')
+    //     ctx.drawImage(img, 0, 0)
+    //     ctx.getImageData(0, 0, 1, 1)
+    //     const texture = new THREE.CanvasTexture(canvas)
+    //     texture.needsUpdate = true
+    //     const finalSize = getSize(
+    //       { width: texture.image.width, height: texture.image.height },
+    //       config.post.size.width
+    //     )
+    //     texture.size = new THREE.Vector2(finalSize.width, finalSize.height)
+    //     renderer.setTexture2D(texture, 0)
+    //     texture.name = `${filename}`
+    //     texture.mediaType = 'image'
+    //     texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
+    //     resolve(texture)
+    //   } catch (e) {
+    //     resolve(-1)
+    //   }
+    // }
+    // img.onerror = function (e) {
+    //   resolve(-1)
+    // }
+    // img.crossOrigin = 'anonymous'
+    // img.src = 'https://cors-anywhere.herokuapp.com/' + filename
+    const proxy = 'https://devapi.fankave.com/cmsx/instaproxy/media?url='
+    const loader = new THREE.TextureLoader()
+    loader.setCrossOrigin('*')
+    loader.load(
+      proxy + encodeURIComponent(filename),
       (texture) => {
         texture.needsUpdate = true
         const finalSize = getSize(
@@ -145,9 +176,7 @@ const Timeline = ({ data }) => {
   useEffect(() => {
     init()
     const dataPromises = data.map((item) =>
-      item.type === 'image'
-        ? createImageTexture(item.image, renderer, config)
-        : createVideoTexture(item.image, renderer, config)
+      createImageTexture(item.image, renderer, config)
     )
 
     Promise.all(dataPromises).then((values) => {

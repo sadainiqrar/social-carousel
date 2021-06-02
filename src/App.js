@@ -35,10 +35,10 @@ const transformData = (data) => {
       .map((item) => {
         const { media } = item
         const [post] = media
-        const type = post.mediaType.contains('mp4') ? 'video' : 'image'
+        const type = post.type
         return {
           type,
-          image: post.url,
+          image: type === 'image' ? post.url : post.thumbUrl,
         }
       })
   )
@@ -46,21 +46,24 @@ const transformData = (data) => {
 
 function App() {
   const [posts, setPosts] = useState([])
+  const [rawPosts, setRawPosts] = useState([])
   useEffect(() => {
-    const imagePosts = fetch(
-      'https://api.fankave.com/v1.0/cms/content/social?topic=ciscolive2021&contentType=photo'
-    ).then((response) => response.json())
-    const videoPosts = fetch(
-      'https://api.fankave.com/v1.0/cms/content/social?topic=ciscolive2021&contentType=video'
-    ).then((response) => response.json())
-    Promise.all([imagePosts, videoPosts]).then(([images, videos]) =>
-      setPosts(transformData([...images, ...images]))
-    )
+    fetch('https://api.fankave.com/v1.0/cms/content/social?topic=ciscodining')
+      .then((response) => response.json())
+      .then((images) => {
+        setRawPosts(images)
+        setPosts(transformData([...images, ...images, ...images]))
+      })
   }, [])
   return (
     <>
       <div className="container" style={{ width: 1400, height: 700 }}>
         {posts.length && <TimeLine data={posts} />}
+        <div style={{ width: 400, height: 600, border: '1px solid red' }}>
+          {posts.length && (
+            <Post data={rawPosts.filter((p) => p.type !== 'image')} />
+          )}
+        </div>
       </div>
     </>
   )
