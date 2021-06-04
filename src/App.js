@@ -61,7 +61,7 @@ function App() {
         {posts.length && <TimeLine data={posts} />}
         <div style={{ width: 400, height: 600, border: '1px solid red' }}>
           {posts.length && (
-            <Post data={rawPosts.filter((p) => p.type !== 'image')} />
+            <Post post={rawPosts.filter((p) => p.type === 'image')[0]} />
           )}
         </div>
       </div>

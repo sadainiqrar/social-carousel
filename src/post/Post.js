@@ -14,11 +14,15 @@ const ImageViewer = ({ url }) => {
   return <img className="image" src={url} alt="" />
 }
 
-export const Post = ({ data }) => {
-  const [, , , post] = data
-  const { type, text, media, author } = post
+export const Post = ({ post }) => {
+  const {
+    type,
+    text,
+    media,
+    author,
+    tags = ['#myFY21Impact', '#Hastag1', '#Hashtag2', '#Hashtag3'],
+  } = post
   const [image] = media
-  const tags = ['#myFY21Impact', '#Hastag1', '#Hashtag2', '#Hashtag3']
   const url = `https://devapi.fankave.com/cmsx/instaproxy/media?url=${encodeURIComponent(
     image.url
   )}`
