@@ -17,7 +17,7 @@ export default class Item extends THREE.Group {
       fogColor: { type: 'c', value: new THREE.Color(this.config.fog.color) },
       fogNear: { type: 'f', value: new THREE.Color(this.config.fog.fogNear) },
       fogFar: { type: 'f', value: new THREE.Color(this.config.fog.fogFar) },
-      texture: { type: 't', value: this.texture },
+      tex: { type: 't', value: this.texture },
       opacity: { type: 'f', value: 1.0 },
       progress: { type: 'f', value: 0.0 },
       gradientColor: { type: 'vec3', value: new THREE.Color(0x1b42d8) },
@@ -41,16 +41,12 @@ export default class Item extends THREE.Group {
       fog: true,
       transparent: true,
     })
-    this.material.morphTargets = true
-    // this.mesh = new THREE.Mesh(
-    //   this.geometry,
-    //   new THREE.MeshLambertMaterial({ color: 'white' })y
-    // )
+    this.mesh = new THREE.Mesh(this.geometry, this.material)
 
-    this.mesh = new THREE.Mesh(this.geometry, [
-      this.material,
-      new THREE.MeshPhongMaterial({ color: 0x0000ff }),
-    ])
+    // this.mesh = new THREE.Mesh(this.geometry, [
+    //   this.material,
+    //   new THREE.MeshPhongMaterial({ color: 0x0000ff }),
+    // ])
     this.mesh.scale.set(this.texture.size.width, this.texture.size.height, 1)
     // updates size of meshes after texture has been loaded
     this.texture.onUpdate = () => {
@@ -76,7 +72,7 @@ export default class Item extends THREE.Group {
       )
     )
 
-    this.position.set(pos.x, pos.y, this.itemIndex * -100)
+    this.position.set(pos.x, pos.y, this.itemIndex * -300)
     this.origPos = new THREE.Vector2(pos.x, pos.y)
 
     this.add(this.mesh)

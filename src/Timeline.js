@@ -2,6 +2,10 @@ import React, { useState, useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { TweenMax } from 'gsap'
 import Item from './Item'
+import { Clock } from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass'
 
 function containCanvas(img, canvas) {
   const ctx = canvas.getContext('2d')
@@ -55,12 +59,10 @@ function createImageTexture(filename, renderer, config) {
     //   resolve(-1)
     // }
     // img.crossOrigin = 'anonymous'
-    // img.src = 'https://cors-anywhere.herokuapp.com/' + filename
-    const proxy = 'https://devapi.fankave.com/cmsx/instaproxy/media?url='
     const loader = new THREE.TextureLoader()
     loader.setCrossOrigin('*')
     loader.load(
-      proxy + encodeURIComponent(filename),
+      filename,
       (texture) => {
         texture.needsUpdate = true
         const finalSize = getSize(
@@ -138,23 +140,30 @@ const config = {
   width: 1400,
   height: 700,
   fog: {
-    color: 0xaec7c3,
-    near: 2000,
-    far: 5000,
+    color: '#f5f5f5',
+    near: 300,
+    far: 1500,
   },
   camera: {
     aspectRatio: 1400 / 700,
     fov: 35,
-    near: 500,
+    near: 200,
     far: 2500,
   },
 }
 
 const Timeline = ({ data }) => {
   let scrollPos = config.scrollPos
+  let maxItems = 0
   const target = useRef(null)
   const [renderer] = useState(
-    new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    new THREE.WebGLRenderer({
+      powerPreference: 'high-performance',
+      antialias: true,
+      stencil: false,
+      depth: false,
+      alpha: true,
+    })
   )
   const [scene] = useState(new THREE.Scene())
   const [camera] = useState(
@@ -172,6 +181,23 @@ const Timeline = ({ data }) => {
   const [mousePerspective] = useState(new THREE.Vector2())
   const [timeline] = useState(new THREE.Group())
   const [posts] = useState(new THREE.Group())
+
+  const composer = new EffectComposer(renderer)
+  const renderPass = new RenderPass(scene, camera)
+  const effectPass = new BokehPass(scene, camera, {
+    focus: 0.001,
+    aperture: 0.001,
+    maxblur: 0.01,
+    width: 1400,
+    height: 700,
+  })
+  composer.addPass(renderPass)
+  // composer.addPass(effectPass)
+
+  // composer.addPass(effectPass)
+  // composer.addPass(new EffectPass(camera, new BloomEffect()))
+
+  const clock = new Clock()
   let textures = []
   useEffect(() => {
     init()
@@ -190,7 +216,7 @@ const Timeline = ({ data }) => {
     renderer.setSize(config.width, config.height)
     target.current.appendChild(renderer.domElement)
 
-    scene.background = new THREE.Color(0xaec7c3)
+    scene.background = new THREE.Color('#f5f5f5')
     scene.fog = new THREE.Fog(config.fog.color, config.fog.near, config.fog.far)
     scene.scale.set(1, 1, 1)
 
@@ -211,10 +237,12 @@ const Timeline = ({ data }) => {
         itemIndexTotal: data.length,
       })
     })
+    maxItems = items.length
     items.map((item) => {
       timeline.add(item)
     })
-    renderer.render(scene, camera)
+    // renderer.render(scene, camera)
+    composer.render(clock.getDelta())
     animate()
   }
 
@@ -226,14 +254,14 @@ const Timeline = ({ data }) => {
       ease: 'Power0.Linear',
     })
     // timeline.position.z += delta
-    renderer.render(scene, camera)
+
+    composer.render(clock.getDelta())
   }
 
   const scroll = (e) => {
-    const maxScroll = (data.length || 1) * 100 - (config.camera.near || 0)
+    const maxScroll = (maxItems || 1) * 300 + config.camera.near
     let delta = normalizeWheelDelta(e)
-
-    const newScrollPosition = scrollPos - delta * 60
+    const newScrollPosition = scrollPos + delta * 60
     if (
       newScrollPosition <= maxScroll &&
       newScrollPosition >= config.scrollPos

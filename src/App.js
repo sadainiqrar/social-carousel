@@ -31,7 +31,7 @@ const transformData = (data) => {
     data
       .shuffle()
       // .filter(({ media: [post] }) => post.sizes.full.h > post.sizes.full.w)
-      .slice(0, 50)
+      .slice(0, 30)
       .map((item) => {
         const { media } = item
         const [post] = media
@@ -48,22 +48,24 @@ function App() {
   const [posts, setPosts] = useState([])
   const [rawPosts, setRawPosts] = useState([])
   useEffect(() => {
-    fetch('https://api.fankave.com/v1.0/cms/content/social?topic=ciscodining')
+    fetch(
+      'https://api.fankave.com/v1.0/cms/content/social?topic=fankave.com%3Acontext%3Dtesting'
+    )
       .then((response) => response.json())
       .then((images) => {
         setRawPosts(images)
-        setPosts(transformData([...images, ...images, ...images]))
+        setPosts(transformData(images))
       })
   }, [])
   return (
     <>
       <div className="container" style={{ width: 1400, height: 700 }}>
         {posts.length && <TimeLine data={posts} />}
-        <div style={{ width: 400, height: 600, border: '1px solid red' }}>
+        {/* <div style={{ width: 400, height: 600, border: '1px solid red' }}>
           {posts.length && (
             <Post post={rawPosts.filter((p) => p.type === 'image')[0]} />
           )}
-        </div>
+        </div> */}
       </div>
     </>
   )
