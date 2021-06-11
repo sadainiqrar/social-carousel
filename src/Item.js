@@ -64,17 +64,21 @@ export default class Item extends THREE.Group {
     }
 
     const pos = new THREE.Vector2()
-
-    pos.set(
-      Math.round(Math.random() * this.config.width - this.config.width / 2),
-      Math.round(
-        (Math.random() * this.config.height) / 2 - this.config.height / 4
-      )
-    )
+    let align = this.itemIndex % 4
+    const positionNumber = Math.round(Math.random() * 300) + 100
+    if (align === 0) pos.set(-positionNumber, positionNumber) // bottom left
+    if (align === 1) pos.set(positionNumber, positionNumber) // bottom right
+    if (align === 2) pos.set(positionNumber, -positionNumber) // top right
+    if (align === 3) pos.set(-positionNumber, -positionNumber) // top left
+    // pos.set(
+    //   Math.round(Math.random() * this.config.width - this.config.width / 2),
+    //   Math.round(
+    //     (Math.random() * this.config.height) / 2 - this.config.height / 4
+    //   )
+    // )
 
     this.position.set(pos.x, pos.y, this.itemIndex * -300)
     this.origPos = new THREE.Vector2(pos.x, pos.y)
-
     this.add(this.mesh)
   }
 }

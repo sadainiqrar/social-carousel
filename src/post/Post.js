@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { TweenMax } from 'gsap'
 import './post.css'
 
 const VideoViewer = ({ url }) => {
@@ -19,20 +20,21 @@ export const Post = ({ post }) => {
     type,
     text,
     media,
-    author,
+    author = {
+      name: 'Anonymous User',
+      image:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8dXNlcnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
+    },
     tags = ['#myFY21Impact', '#Hastag1', '#Hashtag2', '#Hashtag3'],
   } = post
   const [image] = media
-  const url = `https://devapi.fankave.com/cmsx/instaproxy/media?url=${encodeURIComponent(
-    image.url
-  )}`
   return (
-    <div className="post-container">
+    <div className="post-container" id="post">
       <div className="post-image">
         {type === 'image' ? (
-          <ImageViewer url={url} />
+          <ImageViewer url={image.url} />
         ) : (
-          <VideoViewer url={url} />
+          <VideoViewer url={image.url} />
         )}
       </div>
       <div className="post-content">

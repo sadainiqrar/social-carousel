@@ -1,0 +1,31 @@
+.filter-list {
+  list-style-type: none;
+  display: flex;
+  gap: 1em;
+}
+
+.filter-list-item {
+  box-sizing: border-box;
+  padding: 5px;
+  border-radius: 5px;
+  color: #0d274d;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 1px 1px 1px 1px rgb(0 0 0 / 40%);
+  height: 48px;
+}
+
+.filter-list-item .text {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border-radius: 5px;
+  padding: 0px 5px;
+  margin: 0;
+}
+
+.filter-list-item .text.selected {
+  background: #0d274d;
+  color: white;
+  height: 100%;
+}

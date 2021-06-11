@@ -7,6 +7,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass'
 
+import { Post } from './post/Post'
+
 function containCanvas(img, canvas) {
   const ctx = canvas.getContext('2d')
   ctx.fillStyle = 'white'
@@ -30,39 +32,12 @@ const getSize = (imageSize, width) => {
     height: (imageSize.height * width) / imageSize.width,
   }
 }
-function createImageTexture(filename, renderer, config) {
+function createImageTexture(data, renderer, config) {
   return new Promise((resolve) => {
-    // const img = new Image()
-    // img.onload = function () {
-    //   try {
-    //     const canvas = document.createElement('canvas')
-    //     const ctx = canvas.getContext('2d')
-    //     ctx.drawImage(img, 0, 0)
-    //     ctx.getImageData(0, 0, 1, 1)
-    //     const texture = new THREE.CanvasTexture(canvas)
-    //     texture.needsUpdate = true
-    //     const finalSize = getSize(
-    //       { width: texture.image.width, height: texture.image.height },
-    //       config.post.size.width
-    //     )
-    //     texture.size = new THREE.Vector2(finalSize.width, finalSize.height)
-    //     renderer.setTexture2D(texture, 0)
-    //     texture.name = `${filename}`
-    //     texture.mediaType = 'image'
-    //     texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
-    //     resolve(texture)
-    //   } catch (e) {
-    //     resolve(-1)
-    //   }
-    // }
-    // img.onerror = function (e) {
-    //   resolve(-1)
-    // }
-    // img.crossOrigin = 'anonymous'
     const loader = new THREE.TextureLoader()
     loader.setCrossOrigin('*')
     loader.load(
-      filename,
+      data.image,
       (texture) => {
         texture.needsUpdate = true
         const finalSize = getSize(
@@ -71,10 +46,10 @@ function createImageTexture(filename, renderer, config) {
         )
         texture.size = new THREE.Vector2(finalSize.width, finalSize.height)
         renderer.setTexture2D(texture, 0)
-        texture.name = `${filename}`
+        texture.name = `${data.image}`
         texture.mediaType = 'image'
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
-        resolve(texture)
+        resolve({ data, texture })
       },
       undefined,
       () => {
@@ -126,45 +101,43 @@ function createVideoTexture(filename, renderer, config) {
   })
 }
 
-const config = {
-  pixelRatio: window.devicePixelRatio >= 2 ? 2 : 1,
-  startTime: Date.now(),
-  scrollPos: 1200,
-  distanceFactor: 200,
-  post: {
-    size: {
-      width: 200,
-      height: 300,
+const Timeline = ({ data, width, height }) => {
+  const config = {
+    pixelRatio: window.devicePixelRatio >= 2 ? 2 : 1,
+    startTime: Date.now(),
+    scrollPos: -1500,
+    distanceFactor: 200,
+    post: {
+      size: {
+        width: 200,
+        height: 300,
+      },
     },
-  },
-  width: 1400,
-  height: 700,
-  fog: {
-    color: '#f5f5f5',
-    near: 300,
-    far: 1500,
-  },
-  camera: {
-    aspectRatio: 1400 / 700,
-    fov: 35,
-    near: 200,
-    far: 2500,
-  },
-}
-
-const Timeline = ({ data }) => {
+    width,
+    height,
+    fog: {
+      color: '#f5f5f5',
+      near: 1000,
+      far: 2500,
+    },
+    camera: {
+      aspectRatio: width / height,
+      fov: 35,
+      near: 0.01,
+      far: 2500,
+    },
+  }
   let scrollPos = config.scrollPos
-  let maxItems = 0
+  const items = []
   const target = useRef(null)
   const [renderer] = useState(
     new THREE.WebGLRenderer({
-      powerPreference: 'high-performance',
       antialias: true,
-      stencil: false,
-      depth: false,
+      depth: true,
       alpha: true,
     })
   )
+  const [selectedItem, setSelectedItem] = useState(null)
   const [scene] = useState(new THREE.Scene())
   const [camera] = useState(
     new THREE.PerspectiveCamera(
@@ -181,19 +154,17 @@ const Timeline = ({ data }) => {
   const [mousePerspective] = useState(new THREE.Vector2())
   const [timeline] = useState(new THREE.Group())
   const [posts] = useState(new THREE.Group())
+  const [meshes] = useState([])
+  const [intersects] = useState([])
 
   const composer = new EffectComposer(renderer)
   const renderPass = new RenderPass(scene, camera)
   const effectPass = new BokehPass(scene, camera, {
-    focus: 0.001,
-    aperture: 0.001,
-    maxblur: 0.01,
-    width: 1400,
-    height: 700,
+    focus: 1500,
+    aperture: 0.0,
+    maxblur: 0.05,
   })
   composer.addPass(renderPass)
-  // composer.addPass(effectPass)
-
   // composer.addPass(effectPass)
   // composer.addPass(new EffectPass(camera, new BloomEffect()))
 
@@ -202,14 +173,13 @@ const Timeline = ({ data }) => {
   useEffect(() => {
     init()
     const dataPromises = data.map((item) =>
-      createImageTexture(item.image, renderer, config)
+      createImageTexture(item, renderer, config)
     )
 
     Promise.all(dataPromises).then((values) => {
       textures.push(...values.filter((value) => value !== -1))
       createTimeline()
     })
-    renderer.domElement.addEventListener('wheel', scroll, { capture: true })
   }, [])
   const init = () => {
     renderer.setPixelRatio(config.pixelRatio)
@@ -221,27 +191,32 @@ const Timeline = ({ data }) => {
     scene.scale.set(1, 1, 1)
 
     camera.position.set(0, 0, 0)
-    camera.projectionMatrix.scale(new THREE.Vector3(1, 1, -1))
-    raycaster.near = camera.near
+    // camera.projectionMatrix.scale(new THREE.Vector3(1, 1, -1))
+    raycaster.near = camera.near + scrollPos
     raycaster.far = camera.far
   }
 
   const createTimeline = () => {
     scene.add(timeline)
-    const items = textures.map((texture, index) => {
+    const initialItems = textures.map((texture, index) => {
       return new Item({
         name: `item-${index}`,
         config,
-        texture,
+        texture: texture.texture,
+        data: texture.data,
         itemIndex: index,
         itemIndexTotal: data.length,
       })
     })
-    maxItems = items.length
-    items.map((item) => {
+    items.push(...initialItems)
+    initialItems.map((item) => {
       timeline.add(item)
     })
-    // renderer.render(scene, camera)
+
+    renderer.domElement.addEventListener('wheel', scroll, { capture: true })
+    renderer.domElement.addEventListener('click', handleClick, {
+      capture: true,
+    })
     composer.render(clock.getDelta())
     animate()
   }
@@ -259,13 +234,13 @@ const Timeline = ({ data }) => {
   }
 
   const scroll = (e) => {
-    const maxScroll = (maxItems || 1) * 300 + config.camera.near
+    const firstItem = items[0]
+    const lastItem = items[items.length - 1]
+    const maxScroll = -lastItem.position.z + config.scrollPos
+    const minScroll = -firstItem.position.z + config.scrollPos
     let delta = normalizeWheelDelta(e)
-    const newScrollPosition = scrollPos + delta * 60
-    if (
-      newScrollPosition <= maxScroll &&
-      newScrollPosition >= config.scrollPos
-    ) {
+    const newScrollPosition = scrollPos - delta * 60
+    if (newScrollPosition <= maxScroll && newScrollPosition >= minScroll) {
       scrollPos = newScrollPosition
       e.preventDefault()
       animate()
@@ -280,9 +255,51 @@ const Timeline = ({ data }) => {
     }
   }
 
+  function getCanvasRelativePosition(event, canvas) {
+    const rect = canvas.getBoundingClientRect()
+    return {
+      x: ((event.clientX - rect.left) * rect.width) / rect.width,
+      y: ((event.clientY - rect.top) * rect.height) / rect.height,
+    }
+  }
+
+  const handleClick = (e) => {
+    if (!renderer || e.target !== renderer.domElement) return
+    const normalizedPosition = getCanvasRelativePosition(e, target.current)
+    mouse.x = (normalizedPosition.x / renderer.domElement.width) * 2 - 1
+    mouse.y = -(normalizedPosition.y / renderer.domElement.height) * 2 + 1
+    raycaster.setFromCamera(mouse, camera)
+    // raycast for items when in timeline mode
+    if (selectedItem) {
+      setSelectedItem(null)
+      return
+    }
+    const [intersected] = raycaster.intersectObjects(timeline.children, true)
+    if (intersected) {
+      setSelectedItem({
+        ...intersected.object.parent,
+        meta: { origPosition: { x: e.clientX, y: e.clientY } },
+      })
+      return
+    }
+  }
   return (
     <>
       <div style={{ overflow: 'auto' }} ref={target}></div>
+      {selectedItem && (
+        <div className="story-container" onClick={() => setSelectedItem(null)}>
+          <div className="story-inner-container">
+            <Post
+              // post={{
+              //   type: selectedItem.data.type,
+              //   text: selectedItem.data.text,
+              //   media: [{ url: selectedItem.data.image }],
+              // }}
+              post={selectedItem.data.data}
+            />
+          </div>
+        </div>
+      )}
     </>
   )
 }

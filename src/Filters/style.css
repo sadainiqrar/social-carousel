@@ -1,0 +1,19 @@
+.filters-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  box-sizing: border-box;
+  height: 88px;
+  border-bottom: 4px solid #ebebeb;
+  background-color: #f5f5f5;
+}
+
+.heading {
+  color: #0d274d;
+  font-size: 16px;
+}
+
+.tab-wrapper {
+  display: flex;
+  align-items: center;
+}

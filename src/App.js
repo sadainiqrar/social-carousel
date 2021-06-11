@@ -5,6 +5,7 @@ import './App.css'
 import data from './sampledata'
 import TimeLine from './Timeline'
 import { Post } from './post/Post'
+import { Filters } from './Filters/Filters'
 
 if (!('contains' in String.prototype)) {
   String.prototype.contains = function (str, startIndex) {
@@ -39,6 +40,7 @@ const transformData = (data) => {
         return {
           type,
           image: type === 'image' ? post.url : post.thumbUrl,
+          data: item,
         }
       })
   )
@@ -59,8 +61,18 @@ function App() {
   }, [])
   return (
     <>
-      <div className="container" style={{ width: 1400, height: 700 }}>
-        {posts.length && <TimeLine data={posts} />}
+      <div
+        className="container"
+        style={{ width: window.innerWidth, height: window.innerHeight }}
+      >
+        <Filters />
+        {posts.length && (
+          <TimeLine
+            data={posts}
+            width={window.innerWidth - 100}
+            height={window.innerHeight - 100}
+          />
+        )}
         {/* <div style={{ width: 400, height: 600, border: '1px solid red' }}>
           {posts.length && (
             <Post post={rawPosts.filter((p) => p.type === 'image')[0]} />

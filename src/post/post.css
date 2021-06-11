@@ -2,10 +2,24 @@
   display: grid;
   padding: 1.5em;
   grid-template-rows: auto 1fr;
-  height: 100%;
+  overflow: hidden;
   box-sizing: border-box;
   row-gap: 1.5em;
   background-color: rgba(245, 245, 245, 0.64);
+  box-shadow: 0 0 10px rgb(13 39 77 / 16%);
+  border-radius: 16px;
+  animation: popup 0.5s;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .post-container .post-image {
