@@ -6,6 +6,7 @@ import data from './sampledata'
 import TimeLine from './Timeline'
 import { Post } from './post/Post'
 import { Filters } from './Filters/Filters'
+import { Overlay } from './Overlay/Overlay'
 
 if (!('contains' in String.prototype)) {
   String.prototype.contains = function (str, startIndex) {
@@ -47,6 +48,7 @@ const transformData = (data) => {
 }
 
 function App() {
+  const [visited, setVisited] = useState(localStorage.getItem('visited'))
   const [posts, setPosts] = useState([])
   const [rawPosts, setRawPosts] = useState([])
   useEffect(() => {
@@ -59,6 +61,10 @@ function App() {
         setPosts(transformData(images))
       })
   }, [])
+  const handleAction = () => {
+    localStorage.setItem('visited', true)
+    setVisited(true)
+  }
   return (
     <>
       <div
@@ -73,11 +79,8 @@ function App() {
             height={window.innerHeight - 100}
           />
         )}
-        {/* <div style={{ width: 400, height: 600, border: '1px solid red' }}>
-          {posts.length && (
-            <Post post={rawPosts.filter((p) => p.type === 'image')[0]} />
-          )}
-        </div> */}
+
+        {!visited && <Overlay onAction={handleAction} />}
       </div>
     </>
   )

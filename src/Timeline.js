@@ -217,6 +217,9 @@ const Timeline = ({ data, width, height }) => {
     renderer.domElement.addEventListener('click', handleClick, {
       capture: true,
     })
+    renderer.domElement.addEventListener('mousemove', handleClick, {
+      capture: true,
+    })
     composer.render(clock.getDelta())
     animate()
   }
@@ -270,11 +273,15 @@ const Timeline = ({ data, width, height }) => {
     mouse.y = -(normalizedPosition.y / renderer.domElement.height) * 2 + 1
     raycaster.setFromCamera(mouse, camera)
     // raycast for items when in timeline mode
-    if (selectedItem) {
-      setSelectedItem(null)
+    const [intersected] = raycaster.intersectObjects(timeline.children, true)
+    if (e.type === 'mousemove') {
+      if (intersected) {
+        target.current.style.cursor = 'pointer'
+      } else {
+        target.current.style.cursor = 'default'
+      }
       return
     }
-    const [intersected] = raycaster.intersectObjects(timeline.children, true)
     if (intersected) {
       setSelectedItem({
         ...intersected.object.parent,
