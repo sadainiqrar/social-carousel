@@ -1,20 +1,14 @@
 .App {
   text-align: center;
 }
-
-.card {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  box-shadow: 0 0 10px 0.25px white;
-  position: absolute;
-  font-size: 1em;
-}
-
-.card .text {
-  background-color: white;
+@font-face {
+  font-family: 'CiscoSansTT';
+  src: url('./fonts/CiscoSansTTRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
 .container {
+  font-family: 'CiscoSansTT';
   padding: 0 50px;
   background: #f5f5f5;
   border-top: 4px solid #ebebeb;

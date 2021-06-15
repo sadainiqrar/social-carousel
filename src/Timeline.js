@@ -6,6 +6,7 @@ import { Clock } from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass'
+import ciscoFont from './fonts/CiscoSansTT_Regular.json'
 
 import { Post } from './post/Post'
 
@@ -173,21 +174,15 @@ const Timeline = ({ data, width, height }) => {
   useEffect(() => {
     init()
 
-    const fontLoader = new THREE.FontLoader()
-    new Promise((resolve) => {
-      fontLoader.load('CiscoSansTT_Regular.json', (font) => {
-        config['fonts'] = [font]
-        resolve()
-      })
-    }).then(() => {
-      const dataPromises = data.map((item) =>
-        createImageTexture(item, renderer, config)
-      )
+    const font = new THREE.Font(ciscoFont)
+    config['fonts'] = [font]
+    const dataPromises = data.map((item) =>
+      createImageTexture(item, renderer, config)
+    )
 
-      Promise.all(dataPromises).then((values) => {
-        textures.push(...values.filter((value) => value !== -1))
-        createTimeline()
-      })
+    Promise.all(dataPromises).then((values) => {
+      textures.push(...values.filter((value) => value !== -1))
+      createTimeline()
     })
   }, [])
   const init = () => {
