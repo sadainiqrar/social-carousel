@@ -172,13 +172,22 @@ const Timeline = ({ data, width, height }) => {
   let textures = []
   useEffect(() => {
     init()
-    const dataPromises = data.map((item) =>
-      createImageTexture(item, renderer, config)
-    )
 
-    Promise.all(dataPromises).then((values) => {
-      textures.push(...values.filter((value) => value !== -1))
-      createTimeline()
+    const fontLoader = new THREE.FontLoader()
+    new Promise((resolve) => {
+      fontLoader.load('CiscoSansTT_Regular.json', (font) => {
+        config['fonts'] = [font]
+        resolve()
+      })
+    }).then(() => {
+      const dataPromises = data.map((item) =>
+        createImageTexture(item, renderer, config)
+      )
+
+      Promise.all(dataPromises).then((values) => {
+        textures.push(...values.filter((value) => value !== -1))
+        createTimeline()
+      })
     })
   }, [])
   const init = () => {

@@ -79,6 +79,23 @@ export default class Item extends THREE.Group {
 
     this.position.set(pos.x, pos.y, this.itemIndex * -300)
     this.origPos = new THREE.Vector2(pos.x, pos.y)
+    const { data } = this.data
+    const { author = { name: '' } } = data
+    const [font] = this.config.fonts || []
     this.add(this.mesh)
+    const textGeometry = new THREE.TextGeometry(author.name, {
+      font,
+      size: 12,
+      height: 0,
+      curveSegments: 4,
+    }).center()
+
+    const textMat = new THREE.MeshBasicMaterial({
+      color: '#0d274d',
+      transparent: false,
+    })
+    this.userName = new THREE.Mesh(textGeometry, textMat)
+    this.userName.position.set(0, -this.mesh.scale.y / 2 - 20, 0)
+    this.add(this.userName)
   }
 }
