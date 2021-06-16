@@ -47,6 +47,7 @@
   background-color: #f5f5f5;
   box-shadow: 8px 8px 24px 0 rgba(13, 39, 77, 0.16);
   display: grid;
+  position: relative;
 }
 
 .search .options .options-item {
