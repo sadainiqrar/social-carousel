@@ -6,7 +6,7 @@ import { Search } from '../Search/Search'
 export const Filters = () => {
   const list = [
     '[ #myCiscoIMPACT ]',
-    '[ #Hashtag3 ]',
+    '[ #Hashtag2 ]',
     '[ #Hashtag4 ]',
     '[ #Hashtag3 ]',
     '[ #Hashtag5 ]',
@@ -17,7 +17,15 @@ export const Filters = () => {
         <p className="heading">Hashtag Filters:</p>
         <Tab list={list} />
       </div>
-      <Search />
+      <Search
+        options={[
+          'My Cisco IMPACT',
+          'My Cisco IMPACT Life',
+          'My Cisco IMPACT Love',
+          'My Cisco IMPACT Memory',
+          'My Cisco IMPACT Story',
+        ]}
+      />
     </div>
   )
 }
