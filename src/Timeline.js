@@ -10,36 +10,60 @@ import ciscoFont from './fonts/CiscoSansTT_Regular.json'
 
 import { Post } from './post/Post'
 
-function containCanvas(img, canvas) {
-  const ctx = canvas.getContext('2d')
-  ctx.fillStyle = 'white'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-  const imgRatio = img.height / img.width
-  const winRatio = canvas.height / canvas.width
-  if (imgRatio < winRatio) {
-    const h = canvas.width * imgRatio
-    ctx.drawImage(img, 0, (canvas.height - h) / 2, canvas.width, h)
-  } else if (imgRatio > winRatio) {
-    const w = (canvas.width * winRatio) / imgRatio
-    ctx.drawImage(img, (canvas.width - w) / 2, 0, w, canvas.height)
-  } else {
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-  }
-}
-
 const getSize = (imageSize, width) => {
   return {
     width,
     height: (imageSize.height * width) / imageSize.width,
   }
 }
+
+const roundedImage = (ctx, x, y, width, height, radius) => {
+  ctx.beginPath()
+  ctx.moveTo(x + radius, y)
+  ctx.lineTo(x + width - radius, y)
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius)
+  ctx.lineTo(x + width, y + height - radius)
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+  ctx.lineTo(x + radius, y + height)
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius)
+  ctx.lineTo(x, y + radius)
+  ctx.quadraticCurveTo(x, y, x + radius, y)
+  ctx.closePath()
+}
+
+const generateCanvasImage = (url) => {
+  return new Promise((resolve) => {
+    const image = new Image()
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    image.crossOrigin = 'anonymous'
+    image.onload = function () {
+      canvas.width = image.width + 40
+      canvas.height = image.height + 40
+      ctx.save()
+      roundedImage(ctx, 0, 0, canvas.width, canvas.height, 10)
+      ctx.clip()
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.restore()
+      roundedImage(ctx, 20, 20, image.width, image.height, 10)
+      ctx.clip()
+      ctx.drawImage(image, 20, 20, image.width, image.height)
+      ctx.restore()
+      resolve(canvas)
+    }
+    image.onerror = function () {
+      resolve(null)
+    }
+    image.src = url
+  })
+}
+
 function createImageTexture(data, renderer, config) {
   return new Promise((resolve) => {
-    const loader = new THREE.TextureLoader()
-    loader.setCrossOrigin('*')
-    loader.load(
-      data.image,
-      (texture) => {
+    generateCanvasImage(data.image)
+      .then((canvas) => {
+        const texture = new THREE.CanvasTexture(canvas)
         texture.needsUpdate = true
         const finalSize = getSize(
           { width: texture.image.width, height: texture.image.height },
@@ -51,54 +75,8 @@ function createImageTexture(data, renderer, config) {
         texture.mediaType = 'image'
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
         resolve({ data, texture })
-      },
-      undefined,
-      () => {
-        resolve(-1)
-      }
-    )
-  })
-}
-
-function createVideoTexture(filename, renderer, config) {
-  return new Promise((resolve) => {
-    const video = document.createElement('video')
-    video.style = 'position:absolute;height:0'
-    video.muted = true
-    video.autoplay = false
-    video.loop = true
-    video.crossOrigin = 'anonymous'
-    video.setAttribute('muted', true)
-    video.setAttribute('webkit-playsinline', true)
-    video.setAttribute('playsinline', true)
-    video.preload = 'metadata'
-    video.src = `${filename}`
-    document.body.appendChild(video)
-    video.load() // must call after setting/changing source
-    video.onloadeddata = () => {
-      video.onerror = null
-      const texture = new THREE.VideoTexture(video)
-      texture.minFilter = texture.magFilter = THREE.LinearFilter
-      texture.name = `${filename}`
-      texture.mediaType = 'video'
-      texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
-      const finalSize = getSize(
-        { width: texture.image.videoWidth, height: texture.image.videoHeight },
-        config.post.size.width
-      )
-      texture.size = new THREE.Vector2(finalSize.width, finalSize.height)
-      renderer.setTexture2D(texture, 0)
-      video.oncanplaythrough = () => {
-        texture.needsUpdate = false
-        video.oncanplaythrough = null
-      }
-      resolve(texture)
-    }
-
-    video.onerror = () => {
-      video.onloadeddata = null
-      resolve(-1)
-    }
+      })
+      .catch(() => resolve(null))
   })
 }
 
@@ -181,7 +159,7 @@ const Timeline = ({ data, width, height }) => {
     )
 
     Promise.all(dataPromises).then((values) => {
-      textures.push(...values.filter((value) => value !== -1))
+      textures.push(...values.filter((value) => value))
       createTimeline()
     })
   }, [])
