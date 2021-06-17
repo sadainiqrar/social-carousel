@@ -5,9 +5,10 @@ const OptionsList = forwardRef(
   ({ options, selectedOption = null, onSelect, onHover }, ref) => {
     return (
       <ul class="options" ref={ref}>
-        {options.map((option, index) => {
+        {options.slice(0, 5).map((option, index) => {
           return (
             <li
+              id={`option-${index}`}
               className={`options-item ${
                 selectedOption === index ? 'hovered' : ''
               }`}

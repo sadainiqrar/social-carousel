@@ -21,6 +21,7 @@
   height: 100%;
   left: 0;
   top: 0;
+  display: grid;
   backdrop-filter: blur(10px);
 }
 
@@ -28,7 +29,6 @@
   display: grid;
   overflow: hidden;
   width: 30%;
-  height: 100%;
   margin: auto;
   padding: 2%;
   box-sizing: border-box;

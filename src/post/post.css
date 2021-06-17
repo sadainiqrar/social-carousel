@@ -1,7 +1,6 @@
 .post-container {
   display: grid;
   padding: 1.5em;
-  grid-template-rows: auto 1fr;
   overflow: hidden;
   box-sizing: border-box;
   row-gap: 1.5em;
@@ -51,7 +50,6 @@
 
 .post-content {
   display: grid;
-  grid-template-rows: auto 1fr auto;
   row-gap: 1em;
   font-stretch: normal;
   font-style: normal;
@@ -68,9 +66,6 @@
 .post-content .tags {
   font-size: 1.6em;
   font-weight: bold;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
 .post-content .user-details {
