@@ -33,14 +33,15 @@ const transformData = (data) => {
     data
       .shuffle()
       // .filter(({ media: [post] }) => post.sizes.full.h > post.sizes.full.w)
-      .slice(0, 30)
+      .filter((item) => item.media)
+      .slice(0, 100)
       .map((item) => {
         const { media } = item
         const [post] = media
-        const type = post.type
+        const type = item.type
         return {
           type,
-          image: type === 'image' ? post.url : post.thumbUrl,
+          image: type === 'image' ? post.url : post.thumbUrl || post.url,
           data: item,
         }
       })
@@ -50,16 +51,19 @@ const transformData = (data) => {
 function App() {
   const [visited, setVisited] = useState(localStorage.getItem('visited'))
   const [posts, setPosts] = useState([])
-  const [rawPosts, setRawPosts] = useState([])
   useEffect(() => {
-    fetch(
-      'https://api.fankave.com/v1.0/cms/content/social?topic=fankave.com%3Acontext%3Dtesting'
-    )
+    fetch('https://devapi.fankave.com/v1.0/cms/content/social?topic=CiscoStore')
       .then((response) => response.json())
       .then((images) => {
-        setRawPosts(images)
         setPosts(transformData(images))
       })
+    // fetch(
+    //   'https://api.fankave.com/v1.0/cms/content/social?topic=fankave.com%3Acontext%3Dtesting'
+    // )
+    //   .then((response) => response.json())
+    //   .then((images) => {
+    //     setPosts(transformData(images))
+    //   })
   }, [])
   const handleAction = () => {
     localStorage.setItem('visited', true)

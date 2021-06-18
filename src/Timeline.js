@@ -17,7 +17,24 @@ const getSize = (imageSize, width) => {
   }
 }
 
-const roundedImage = (ctx, x, y, width, height, radius) => {
+const rotatePoint = (x, y, cx, cy, angle) => {
+  const s = Math.sin(degsToRads(angle))
+  const c = Math.cos(degsToRads(angle))
+
+  // translate point back to origin:
+  const oX = x - cx
+  const oY = y - cy
+
+  // rotate point
+  const xNew = oX * c - oY * s
+  const yNew = oX * s + oY * c
+
+  return { x: xNew + cx, y: yNew + cy }
+}
+
+const degsToRads = (deg) => (deg * Math.PI) / 180.0
+
+const roundedBorders = (ctx, x, y, width, height, radius) => {
   ctx.beginPath()
   ctx.moveTo(x + radius, y)
   ctx.lineTo(x + width - radius, y)
@@ -31,7 +48,30 @@ const roundedImage = (ctx, x, y, width, height, radius) => {
   ctx.closePath()
 }
 
-const generateCanvasImage = (url) => {
+const generatePlayButton = (ctx, width, height) => {
+  const x = width / 2
+  const y = height / 2
+  ctx.fillStyle = 'transparent'
+
+  ctx.beginPath()
+  ctx.lineWidth = 30
+  ctx.arc(x, y, width / 5, 0, 2 * Math.PI)
+  ctx.strokeStyle = '#55c3ec'
+  ctx.stroke()
+
+  //make play button
+  const p1 = { x: x + width / 5 - 30, y }
+  const p2 = rotatePoint(p1.x, p1.y, x, y, 120)
+  const p3 = rotatePoint(p1.x, p1.y, x, y, -120)
+  ctx.fillStyle = '#55c3ec'
+  ctx.beginPath()
+  ctx.moveTo(p1.x, p1.y)
+  ctx.lineTo(p2.x, p2.y)
+  ctx.lineTo(p3.x, p3.y)
+  ctx.fill()
+}
+
+const generateCanvasImage = (url, type) => {
   return new Promise((resolve) => {
     const image = new Image()
     const canvas = document.createElement('canvas')
@@ -41,15 +81,16 @@ const generateCanvasImage = (url) => {
       canvas.width = image.width + 40
       canvas.height = image.height + 40
       ctx.save()
-      roundedImage(ctx, 0, 0, canvas.width, canvas.height, 10)
+      roundedBorders(ctx, 0, 0, canvas.width, canvas.height, 10)
       ctx.clip()
       ctx.fillStyle = 'white'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       ctx.restore()
-      roundedImage(ctx, 20, 20, image.width, image.height, 10)
+      roundedBorders(ctx, 20, 20, image.width, image.height, 10)
       ctx.clip()
       ctx.drawImage(image, 20, 20, image.width, image.height)
       ctx.restore()
+      if (type === 'video') generatePlayButton(ctx, canvas.width, canvas.height)
       resolve(canvas)
     }
     image.onerror = function () {
@@ -61,7 +102,7 @@ const generateCanvasImage = (url) => {
 
 function createImageTexture(data, renderer, config) {
   return new Promise((resolve) => {
-    generateCanvasImage(data.image)
+    generateCanvasImage(data.image, data.type)
       .then((canvas) => {
         const texture = new THREE.CanvasTexture(canvas)
         texture.needsUpdate = true
